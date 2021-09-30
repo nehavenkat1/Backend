@@ -39,12 +39,17 @@ const signup = (req, res, next) => {
 }
 
 const login = (req, res, next) => {
+    const errors = validationResult(req)
+
+    if(!errors.isEmpty()) {
+        throw new HttpError('Could not login.', 422)
+    }
     const { email, password } = req.body
 
     const identifiedUser = DUMMY_USERS.find(u => u.email === email)
 
     if(!identifiedUser || identifiedUser.password !== password) {
-        throw new HttpError('Could not identify user', 401)
+        throw new HttpError('Could not identify user. Looks like there is no such user available.', 401)
     }
 
     res.json({message: 'Logged In!'})
