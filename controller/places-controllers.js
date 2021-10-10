@@ -3,6 +3,7 @@ const  { validationResult } = require('express-validator')
 
 const HttpError = require('../models/http-error')
 const getCoordsForAddress = require('../util/location')
+const Place = require('../models/place')
 
 let DUMMY_PLACES = [
     {
@@ -18,13 +19,26 @@ let DUMMY_PLACES = [
     }
 ]
 
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async (req, res, next) => {
     const placeId = req.params.pid
-    const place = DUMMY_PLACES.find(place => place.id === placeId)
-    if(!place) {
-        throw new HttpError('Could not find a place.', 404)
+
+    let place
+    try {
+        place = await Place.findById(placeId)
+    } catch (err) {
+        const error = new HttpError(
+            'Something went wrong. Could not find place',
+            500
+        )
+        return next(error)
     }
-    res.json({place})
+    
+    
+    if(!place) {
+        const error = new HttpError('Could not find a place.', 404)
+        return next(error)
+    }
+    res.json({place : place.toObject({getters: true})})
 }
 
 const getPlacesByUserId = (req, res, next) => {
@@ -37,24 +51,34 @@ const getPlacesByUserId = (req, res, next) => {
     res.json({places})
 }
 
-const createPlace = (req, res, next) => {
+const createPlace = async (req, res, next) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()) {
         throw new HttpError('Invalid input. Please check your data.', 422)
     }
     const { title, description, address, creator } = req.body
     let coordinates = getCoordsForAddress(address)
-
-    const createdPlace = {
-        id: uuid.v4(),
+    
+    const createdPlace = new Place({
         title,
         description,
-        location: coordinates,
         address,
+        location: coordinates,
+        image: 'https://www.google.com/imgres?imgurl=https%3A%2F%2Fwww.history.com%2F.image%2Far_4%3A3%252Cc_fill%252Ccs_srgb%252Cfl_progressive%252Cq_auto%3Agood%252Cw_1200%2FMTU3ODc3NjU2NzUxNTgwODk1%2Fthis-day-in-history-05011931---empire-state-building-dedicated.jpg&imgrefurl=https%3A%2F%2Fwww.history.com%2Fthis-day-in-history%2Fempire-state-building-dedicated&tbnid=rtrjrk49tcC3iM&vet=12ahUKEwilj6OWjb3zAhVGALcAHTylBggQMygDegUIARDTAQ..i&docid=5nQp3KfRr6LG2M&w=1200&h=900&q=empire%20state%20building&ved=2ahUKEwilj6OWjb3zAhVGALcAHTylBggQMygDegUIARDTAQ',
         creator
-    }
+    })
 
-    DUMMY_PLACES.push(createdPlace)
+    try {
+        await createdPlace.save()
+    } catch(err) {
+        const error = new HttpError(
+            'Creating place failed, please try again.',
+            500
+        )
+        return next(error)
+    }
+    
+
     res.status(201).json({place: createdPlace})
 }
 
