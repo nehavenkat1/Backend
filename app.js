@@ -28,7 +28,6 @@ app.use((error, req, res, next) => {
 mongoose
 .connect('mongodb+srv://neha123:neha123@cluster0.21ldn.mongodb.net/places?retryWrites=true&w=majority')
 .then(() => {
-    //console.log('connected')
     app.listen(5000)
 })
 .catch(err => {
