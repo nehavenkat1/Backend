@@ -31,7 +31,7 @@ const signup = async (req, res, next) => {
     if(!errors.isEmpty()) {
         return next(new HttpError('Please enter proper values.', 422)) 
     }
-    const { name, email, password, places } = req.body
+    const { name, email, password } = req.body
 
     let existingUser
     try {
@@ -51,7 +51,7 @@ const signup = async (req, res, next) => {
         email,
         image: 'https://www.google.com/imgres?imgurl=https%3A%2F%2Fcdn.vectorstock.com%2Fi%2F1000x1000%2F30%2F97%2Fflat-business-man-user-profile-avatar-icon-vector-4333097.jpg&imgrefurl=https%3A%2F%2Fwww.vectorstock.com%2Froyalty-free-vector%2Fflat-business-man-user-profile-avatar-icon-vector-4333097&tbnid=4kXGls3qUNG46M&vet=12ahUKEwjIkcTK6MPzAhUMkksFHcaXDLgQMygMegUIARDkAQ..i&docid=u1SY3va6wsUW9M&w=1000&h=1080&q=user%20image&ved=2ahUKEwjIkcTK6MPzAhUMkksFHcaXDLgQMygMegUIARDkAQ',
         password,
-        places
+        places: []
     })
 
     try {
