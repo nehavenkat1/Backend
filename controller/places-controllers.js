@@ -92,7 +92,7 @@ const createPlace = async (req, res, next) => {
 const updatePlaceById = async (req, res, next) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()) {
-        throw new HttpError('Invalid input.', 422)
+        return next(new HttpError('Invalid input.', 422)) 
     }
     const { title, description } = req.body
     const placeId = req.params.pid
